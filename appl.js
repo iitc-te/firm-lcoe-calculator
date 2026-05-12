@@ -445,7 +445,7 @@ jQuery(document).ready(function () {
 
         placeMarker(rawX, rawY, transform.k);
 
-        setTimeout(function () { showOffcanvas(lat, lon); }, 1000);
+        setTimeout(function () { showOffcanvas(lat, lon, true); }, 1000);
 
     });
 
@@ -466,7 +466,7 @@ jQuery(document).ready(function () {
 
     // ── Open panel and initialise state ───────────────────────────────────
 
-    function showOffcanvas(lat, lon) {
+    function showOffcanvas(lat, lon, restoreInputs) {
 
         currentLat = lat;
         currentLon = lon;
@@ -490,6 +490,22 @@ jQuery(document).ready(function () {
 
         restoreApiKey("ninj");
         restoreApiKey("ieso");
+
+        // Restore non-location inputs from last session if requested
+        if (restoreInputs) {
+            try {
+                var raw = localStorage.getItem(SESSION_KEY);
+                if (raw) {
+                    var stored = JSON.parse(raw);
+                    if (stored && stored.input) {
+                        populateForm(stored.input);
+                        // New location overrides whatever was stored
+                        jQuery("#lolat").val(lat.toFixed(5));
+                        jQuery("#lolon").val(lon.toFixed(5));
+                    }
+                }
+            } catch (e) {}
+        }
 
         jQuery("#offcanvas").find(".repr_week")
             .data("plot", "").data("vmin", "").data("vmax", "");
