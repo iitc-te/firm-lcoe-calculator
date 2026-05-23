@@ -117,7 +117,38 @@
                             </div>
                             <div class="col-md-3">
                                 <div style="padding: 1.5rem; display: flex; align-items: center; height: 100%;">
-                                    <div class="form-text">Closes this panel so you can click on the map to place the marker.</div>
+                                    &nbsp;
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="min-height: 0.75rem;"></div>
+
+                        <div class="row d-flex" style="background: #f6f6f6; border-radius: var(--bs-border-radius);">
+                            <div class="col-md-12">
+                                <div style="padding: 1.5rem;">
+
+                                    <label for="case_desc" class="form-label">Case Description</label>
+                                    <textarea class="form-control" id="case_desc" rows="2" placeholder="Brief description of the site, project, or scenario being simulated."></textarea>
+
+                                    <div style="min-height: 0.75rem;"></div>
+
+                                    <label class="form-label" for="share-url">
+                                        &nbsp;
+                                        <i class="bi bi-share"></i>
+                                        &nbsp;
+                                        Share this calculation
+                                    </label>
+                                    <div class="input-group">
+                                        <button class="btn btn-outline-secondary" id="btn-generate" type="button">
+                                            <i class="bi bi-link-45deg" aria-hidden="true"></i> Generate link
+                                        </button>
+                                        <input type="text" class="form-control" id="share-url" readonly="" onfocus="this.select();" placeholder="Run a simulation first">
+                                        <button class="btn btn-outline-secondary" id="btn-copy" type="button" aria-label="Copy link to clipboard" disabled>
+                                            <i class="bi bi-clipboard" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>

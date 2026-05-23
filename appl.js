@@ -405,19 +405,43 @@ jQuery(document).ready(function () {
                 .attr("d", path)
                 .attr("id", function (d) { return "country-" + d.id; });
 
-            // Auto-restore last session
-            var raw = localStorage.getItem(SESSION_KEY);
-            if (raw) {
-                try {
-                    var session = JSON.parse(raw);
-                    if (session && session.input &&
-                        session.input.lolat != null &&
-                        session.input.lolon != null) {
-                        restoreSession(session);
+            // Restore from share link if present, otherwise from localStorage
+            var shareId = new URLSearchParams(window.location.search).get("share");
+
+            if (shareId) {
+
+                jQuery.ajax({
+                    url:      "https://responsive.li/api/firm-lcoe-calculator/get/?id=" + encodeURIComponent(shareId),
+                    method:   "GET",
+                    dataType: "json",
+                    success: function (session) {
+                        if (session && session.input &&
+                            session.input.lolat != null &&
+                            session.input.lolon != null) {
+                            restoreSession(session);
+                            var url = window.location.href.split("?")[0] + "?share=" + shareId;
+                            jQuery("#share-url").val(url);
+                            jQuery("#btn-copy").prop("disabled", false);
+                        }
                     }
-                } catch (e) {
-                    console.warn("Session restore failed:", e);
+                });
+
+            } else {
+
+                var raw = localStorage.getItem(SESSION_KEY);
+                if (raw) {
+                    try {
+                        var session = JSON.parse(raw);
+                        if (session && session.input &&
+                            session.input.lolat != null &&
+                            session.input.lolon != null) {
+                            restoreSession(session);
+                        }
+                    } catch (e) {
+                        console.warn("Session restore failed:", e);
+                    }
                 }
+
             }
 
         })
@@ -569,10 +593,11 @@ jQuery(document).ready(function () {
         set("hStrg_bess", inp.hStrg_bess);
         set("rtEff_bess", inp.rtEff_bess);
 
-        set("cDura",  inp.cDura);
-        set("oDura",  inp.oDura);
-        set("kCost",  inp.kCost);
-        set("rTarg",  inp.rTarg);
+        set("cDura",     inp.cDura);
+        set("oDura",     inp.oDura);
+        set("kCost",     inp.kCost);
+        set("rTarg",     inp.rTarg);
+        set("case_desc", inp.case_desc);
 
     }
 
@@ -602,7 +627,8 @@ jQuery(document).ready(function () {
                 cDura:  num("cDura"),
                 oDura:  num("oDura"),
                 kCost:  num("kCost"),
-                rTarg:  num("rTarg")
+                rTarg:     num("rTarg"),
+                case_desc: txt("case_desc")
             },
             output: server_data
         };
@@ -817,7 +843,7 @@ jQuery(document).ready(function () {
 
         jQuery.ajax({
 
-            url:         "https://responsive.li/api/rtc/",
+            url:         "https://responsive.li/api/firm-lcoe-calculator/",
             method:      "POST",
             data:        JSON.stringify(payload),
             contentType: "application/json",
@@ -867,6 +893,79 @@ jQuery(document).ready(function () {
 
         });
 
+    });
+
+    // ── Generate share link ───────────────────────────────────────────────
+
+    jQuery("#btn-generate").on("click", function () {
+
+        if (!server_data || !server_data.demand) {
+            msgbox.info("Run a simulation first before generating a share link.");
+            return;
+        }
+
+        var payload = {
+            input: {
+                lolat:              currentLat,
+                lolon:              currentLon,
+                case_desc:          txt("case_desc"),
+                iCapa_solr:         num("iCapa_solr"),
+                cCost_solr:         num("cCost_solr"),
+                oCost_t_cCost_solr: num("oCost_t_cCost_solr"),
+                fOpts_solr:         bool("fOpts_solr"),
+                iCapa_wind:         num("iCapa_wind"),
+                cCost_wind:         num("cCost_wind"),
+                oCost_t_cCost_wind: num("oCost_t_cCost_wind"),
+                fOpts_wind:         bool("fOpts_wind"),
+                iCapa_bess:         num("iCapa_bess"),
+                cCost_bess:         num("cCost_bess"),
+                oCost_t_cCost_bess: num("oCost_t_cCost_bess"),
+                fOpts_bess:         bool("fOpts_bess"),
+                shBOS_bess:         num("shBOS_bess"),
+                hStrg_bess:         num("hStrg_bess"),
+                rtEff_bess:         num("rtEff_bess"),
+                cDura:              num("cDura"),
+                oDura:              num("oDura"),
+                kCost:              num("kCost"),
+                rTarg:              num("rTarg")
+            },
+            output: server_data
+        };
+
+        jQuery.ajax({
+            url:         "https://responsive.li/api/firm-lcoe-calculator/save/",
+            method:      "POST",
+            data:        JSON.stringify(payload),
+            contentType: "application/json",
+            dataType:    "json",
+            success: function (resp) {
+                if (resp.rs === 1) {
+                    var base = window.location.href.split("?")[0];
+                    jQuery("#share-url").val(base + "?share=" + resp.id);
+                    jQuery("#btn-copy").prop("disabled", false);
+                } else {
+                    msgbox.failure("Could not generate share link.");
+                }
+            },
+            error: function () {
+                msgbox.failure("Could not generate share link.");
+            }
+        });
+
+    });
+
+    // ── Copy share link ───────────────────────────────────────────────────
+
+    jQuery("#btn-copy").on("click", function () {
+        var url = jQuery("#share-url").val();
+        if (!url) return;
+        navigator.clipboard.writeText(url).then(function () {
+            var $icon = jQuery("#btn-copy").find("i");
+            $icon.removeClass("bi-clipboard").addClass("bi-check2");
+            setTimeout(function () {
+                $icon.removeClass("bi-check2").addClass("bi-clipboard");
+            }, 2000);
+        });
     });
 
     // ── Week-selector links ───────────────────────────────────────────────
