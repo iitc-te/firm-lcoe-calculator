@@ -729,7 +729,7 @@ jQuery(document).ready(function () {
 
     // Clear validation decorations while typing; invalidate results for
     // simulation parameters (excludes API key fields and case_desc)
-    jQuery("#offcanvas_form").on("input", "input", function () {
+    jQuery("#offcanvas_form").on("input", "input:not([type=radio]):not([type=checkbox])", function () {
         jQuery(this).removeClass("is-invalid is-valid");
         var id = jQuery(this).attr("id");
         if (id !== "ninj" && id !== "ieso") invalidateResults();
