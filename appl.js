@@ -717,10 +717,26 @@ jQuery(document).ready(function () {
 
     };
 
-    // Clear validation decorations while typing
+    // ── Invalidate results when inputs change ─────────────────────────────
+
+    function invalidateResults() {
+        jQuery("#results-area").addClass("hddn");
+        jQuery("#offcanvas").find(".result").empty();
+        jQuery("#share-url").val("");
+        jQuery("#btn-copy").prop("disabled", true);
+        server_data = {};
+    }
+
+    // Clear validation decorations while typing; invalidate results for
+    // simulation parameters (excludes API key fields and case_desc)
     jQuery("#offcanvas_form").on("input", "input", function () {
         jQuery(this).removeClass("is-invalid is-valid");
+        var id = jQuery(this).attr("id");
+        if (id !== "ninj" && id !== "ieso") invalidateResults();
     });
+
+    // Firming option toggles
+    jQuery("#offcanvas_form").on("change", "input[type=checkbox]", invalidateResults);
 
     // ── Value helpers ─────────────────────────────────────────────────────
 
