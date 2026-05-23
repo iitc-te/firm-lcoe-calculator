@@ -422,7 +422,12 @@ jQuery(document).ready(function () {
                             var url = window.location.href.split("?")[0] + "?share=" + shareId;
                             jQuery("#share-url").val(url);
                             jQuery("#btn-copy").prop("disabled", false);
+                        } else {
+                            msgbox.failure("The shared link could not be restored.");
                         }
+                    },
+                    error: function () {
+                        msgbox.failure("The shared link was not found or has expired.");
                     }
                 });
 
